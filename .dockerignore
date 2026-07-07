@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+logs/
+*.db
+.DS_Store
+.env
+# 忽略所有 Excel 文件（私钥文件）
+*.xlsx
+*.xls

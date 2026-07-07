@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  agentops:
+    build: .
+    container_name: agentops
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./projects.db:/app/projects.db
+      - ./logs:/app/logs
+      - ./.env:/app/.env
+    restart: unless-stopped
