@@ -12,9 +12,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 5. 复制项目所有代码到容器的工作目录
 COPY . .
+# 6.删除所有 Excel 文件（私钥文件）
+RUN find /app/scripts -name "*.xlsx" -type f -delete
 
-# 6. 声明容器运行时监听的端口（只是声明，实际映射在运行命令时指定）
+# 7. 声明容器运行时监听的端口（只是声明，实际映射在运行命令时指定）
 EXPOSE 8000
 
-# 7. 启动命令：容器启动时执行什么
+# 8. 启动命令：容器启动时执行什么
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
