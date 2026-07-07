@@ -245,4 +245,4 @@ MIT © 2026 Lucas
 ## 📬 联系方式
 
 - GitHub: [@lucas045057-eng](https://github.com/lucas045057-eng)
-- Email: [你的邮箱]
+- Email: lucas045057@gmail.com
