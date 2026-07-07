@@ -80,7 +80,7 @@ docker-compose up -d
 # 访问仪表板
 # http://localhost:8000/static/index.html
 
-📂项目结构
+## 📂 项目结构
 AgentOps/
 ├── app/
 │   ├── config.py              # 配置管理
@@ -105,7 +105,7 @@ AgentOps/
 ├── Dockerfile
 ├── docker-compose.yml
 └── .env                       # 环境变量（不提交）
-🏛️架构设计
+## 🏛️ 架构设计
 三层架构
 ┌─────────────────────────────────────────────────────┐
 │  表现层 (Presentation)                             │
@@ -126,7 +126,7 @@ AgentOps/
 │  - 上下文管理器自动管理连接                        │
 │  - 外键约束 + 索引优化                            │
 └─────────────────────────────────────────────────────┘
-数据库ER图
+## 数据库ER图
 projects (项目)
     │
     ├─ 1 : N ── tasks (任务)
@@ -136,7 +136,7 @@ projects (项目)
     │                               ├─ 1 : N ── executions (执行记录)
     │                                               │
     │                                               ├─ 1 : N ── account_results (账号明细)
-数据流向
+## 数据流向
 用户点击执行 → FastAPI 路由 → execution_service
     ↓
 启动异步子进程执行脚本
@@ -150,12 +150,12 @@ projects (项目)
 失败时发送邮件通知
     ↓
 前端仪表板展示结果（可展开账号明细）
-🐳 部署方式对比
+## 🐳 部署方式对比
 方式	适用场景	命令
 Docker Compose	生产环境 / 跨平台迁移	docker-compose up -d
 Systemd (Linux)	原生 Linux 服务	sudo systemctl start agentops
 本地开发	开发调试	uvicorn main:app --reload
-🗺️ 未来规划
+## 🗺️ 未来规划
 WebSocket 实时日志推送
 
 Telegram / 钉钉 / 飞书通知
@@ -167,9 +167,9 @@ Celery + Redis 分布式执行
 用户认证与权限管理
 
 AiAgent调研项目 + 自动编写脚本执行
-📄 License
+## 📄 License
 MIT © 2026 Lucas
-🤝 贡献
+## 🤝 贡献
 欢迎提交 Issue 和 Pull Request！
 
 如果你有好的想法或者发现了 Bug，请告诉我。
