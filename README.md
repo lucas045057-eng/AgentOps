@@ -1,3 +1,8 @@
+好的！你的 README 内容已经非常完整了，只需要修复一些小问题（代码块闭合、标题层级）。下面是修正后的完整版本，可以直接替换：
+
+---
+
+```markdown
 # AgentOps — 自动化脚本管理平台
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue.svg)
@@ -79,8 +84,46 @@ docker-compose up -d
 
 # 访问仪表板
 # http://localhost:8000/static/index.html
+```
+
+### 方式二：本地开发（需 Python 3.12）
+
+```bash
+# 创建虚拟环境
+python3.12 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 启动服务
+uvicorn main:app --reload
+```
+
+### 环境变量配置 (`.env`)
+
+```ini
+# 开机自动执行的脚本ID列表（逗号分隔，留空则不执行）
+STARTUP_SCRIPT_IDS=1,2,3
+
+# 邮件通知配置（QQ邮箱示例）
+SMTP_HOST=smtp.qq.com
+SMTP_PORT=465
+SMTP_USER=your_email@qq.com
+SMTP_PASSWORD=your_authorization_code
+SMTP_RECEIVER=receiver@qq.com
+
+# 服务配置
+HOST=0.0.0.0
+PORT=8000
+DEBUG=false
+```
+
+---
 
 ## 📂 项目结构
+
+```
 AgentOps/
 ├── app/
 │   ├── config.py              # 配置管理
@@ -105,8 +148,15 @@ AgentOps/
 ├── Dockerfile
 ├── docker-compose.yml
 └── .env                       # 环境变量（不提交）
+```
+
+---
+
 ## 🏛️ 架构设计
-三层架构
+
+### 三层架构
+
+```
 ┌─────────────────────────────────────────────────────┐
 │  表现层 (Presentation)                             │
 │  - 前端仪表板 (static/index.html)                  │
@@ -126,7 +176,11 @@ AgentOps/
 │  - 上下文管理器自动管理连接                        │
 │  - 外键约束 + 索引优化                            │
 └─────────────────────────────────────────────────────┘
-## 数据库ER图
+```
+
+### 数据库 ER 图
+
+```
 projects (项目)
     │
     ├─ 1 : N ── tasks (任务)
@@ -136,7 +190,11 @@ projects (项目)
     │                               ├─ 1 : N ── executions (执行记录)
     │                                               │
     │                                               ├─ 1 : N ── account_results (账号明细)
-## 数据流向
+```
+
+### 数据流向
+
+```
 用户点击执行 → FastAPI 路由 → execution_service
     ↓
 启动异步子进程执行脚本
@@ -150,26 +208,46 @@ projects (项目)
 失败时发送邮件通知
     ↓
 前端仪表板展示结果（可展开账号明细）
+```
+
+---
+
 ## 🐳 部署方式对比
-方式	适用场景	命令
-Docker Compose	生产环境 / 跨平台迁移	docker-compose up -d
-Systemd (Linux)	原生 Linux 服务	sudo systemctl start agentops
-本地开发	开发调试	uvicorn main:app --reload
+
+| 方式 | 适用场景 | 命令 |
+| :--- | :--- | :--- |
+| **Docker Compose** | 生产环境 / 跨平台迁移 | `docker-compose up -d` |
+| **Systemd (Linux)** | 原生 Linux 服务 | `sudo systemctl start agentops` |
+| **本地开发** | 开发调试 | `uvicorn main:app --reload` |
+
+---
+
 ## 🗺️ 未来规划
-WebSocket 实时日志推送
 
-Telegram / 钉钉 / 飞书通知
+- [ ] WebSocket 实时日志推送
+- [ ] Telegram / 钉钉 / 飞书通知
+- [ ] PostgreSQL 数据库迁移
+- [ ] Celery + Redis 分布式执行
+- [ ] 用户认证与权限管理
+- [ ] AI Agent 调研项目 + 自动编写脚本执行
 
-PostgreSQL 数据库迁移
+---
 
-Celery + Redis 分布式执行
-
-用户认证与权限管理
-
-AiAgent调研项目 + 自动编写脚本执行
 ## 📄 License
+
 MIT © 2026 Lucas
+
+---
+
 ## 🤝 贡献
+
 欢迎提交 Issue 和 Pull Request！
 
 如果你有好的想法或者发现了 Bug，请告诉我。
+
+---
+
+## 📬 联系方式
+
+- GitHub: [@lucas045057-eng](https://github.com/lucas045057-eng)
+- Email: [你的邮箱]
