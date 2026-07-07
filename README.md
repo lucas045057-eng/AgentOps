@@ -1,8 +1,3 @@
-好的！你的 README 内容已经非常完整了，只需要修复一些小问题（代码块闭合、标题层级）。下面是修正后的完整版本，可以直接替换：
-
----
-
-```markdown
 # AgentOps — 自动化脚本管理平台
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue.svg)
