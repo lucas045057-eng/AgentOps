@@ -58,7 +58,11 @@ async def run_startup_scripts():
     for script_id in settings.startup_script_ids:
         try:
             logger.info(f"正在执行开机脚本 {script_id}...")
-            result = await execute_script(script_id, max_retries=1)
+            result = await execute_script(
+                script_id,
+                max_retries=1,
+                timeout_seconds=settings.script_timeout_seconds,
+            )
             if result["status"] == "failed":
                 await send_failure_notification(
                     script_id=script_id,
@@ -214,7 +218,11 @@ async def execute_script_endpoint(script_id: int, max_retries: int = 2):
     try:
         if not get_script(script_id):
             raise HTTPException(status_code=404, detail="Script not found")
-        result = await execute_script(script_id, max_retries=max_retries)
+        result = await execute_script(
+            script_id,
+            max_retries=max_retries,
+            timeout_seconds=settings.script_timeout_seconds,
+        )
         if result["status"] == "failed":
             await send_failure_notification(
                 script_id=script_id,
