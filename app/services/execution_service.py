@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
 
@@ -21,7 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 async def execute_script(
     script_id: int,
     max_retries: int = 2,
-    retry_delay: int = 5
+    retry_delay: int = 5,
+    timeout_seconds: float = 300.0,
 ) -> Dict[str, Any]:
     """
     执行脚本，失败时自动重试
@@ -42,7 +43,7 @@ async def execute_script(
                 logger.warning(f"脚本 {script_id} 第 {attempt} 次重试...")
                 await asyncio.sleep(retry_delay)
 
-            result = await _execute_script_once(script_id)
+            result = await _execute_script_once(script_id, timeout_seconds)
 
             if result["status"] == "success":
                 if attempt > 0:
@@ -72,19 +73,27 @@ async def execute_script(
     }
 
 
-async def _execute_script_once(script_id: int) -> Dict[str, Any]:
+async def _execute_script_once(
+    script_id: int,
+    timeout_seconds: float = 300.0,
+) -> Dict[str, Any]:
     """单次执行脚本（内部函数）"""
     # 1. 获取脚本路径
     script_info = get_script(script_id)
     if not script_info:
         raise ValueError(f"Script {script_id} not found")
 
-    script_abs_path = BASE_DIR / script_info["path"]
+    scripts_dir = (BASE_DIR / "scripts").resolve()
+    script_abs_path = (BASE_DIR / script_info["path"]).resolve()
+    if not script_abs_path.is_relative_to(scripts_dir):
+        raise ValueError("Script path must stay inside the scripts directory")
+    if script_abs_path.suffix.lower() != ".py":
+        raise ValueError("Only Python scripts are supported")
     if not script_abs_path.exists():
         raise FileNotFoundError(f"Script file not found: {script_abs_path}")
 
     # 2. 创建执行记录
-    started_at = datetime.utcnow()
+    started_at = datetime.now(timezone.utc)
     execution_id = add_execution(script_id, "running", "", started_at)
 
     # 3. 执行脚本
@@ -101,16 +110,25 @@ async def _execute_script_once(script_id: int) -> Dict[str, Any]:
             stderr=asyncio.subprocess.PIPE,
             cwd=script_abs_path.parent
         )
-        stdout, stderr = await process.communicate()
+        try:
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(),
+                timeout=timeout_seconds,
+            )
+        except asyncio.TimeoutError:
+            process.kill()
+            await process.wait()
+            stdout = b""
+            stderr = f"Process timed out after {timeout_seconds:g} seconds".encode()
         stdout_str = stdout.decode().strip()
         stderr_str = stderr.decode().strip()
         returncode = process.returncode
-        finished_at = datetime.utcnow()
+        finished_at = datetime.now(timezone.utc)
         duration = (finished_at - started_at).total_seconds()
 
     except Exception as e:
         stderr_str = f"Process error: {str(e)}"
-        finished_at = datetime.utcnow()
+        finished_at = datetime.now(timezone.utc)
         duration = (finished_at - started_at).total_seconds()
         returncode = -1
 
