@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 8000
     debug: bool = False
+    script_timeout_seconds: float = 300.0
 
     class Config:
         env_file = ".env"
