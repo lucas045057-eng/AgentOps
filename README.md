@@ -1,6 +1,7 @@
 # AgentOps — 自动化脚本管理平台
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue.svg)
+![CI](https://github.com/lucas045057-eng/AgentOps/actions/workflows/ci.yml/badge.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-green.svg)
 ![Docker](https://img.shields.io/badge/Docker-✔-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
@@ -99,7 +100,8 @@ uvicorn main:app --reload
 
 ```ini
 # 开机自动执行的脚本ID列表（逗号分隔，留空则不执行）
-STARTUP_SCRIPT_IDS=1,2,3
+STARTUP_SCRIPT_IDS_RAW=1,2,3
+SCRIPT_TIMEOUT_SECONDS=300
 
 # 邮件通知配置（QQ邮箱示例）
 SMTP_HOST=smtp.qq.com
@@ -214,6 +216,15 @@ projects (项目)
 | **Docker Compose** | 生产环境 / 跨平台迁移 | `docker-compose up -d` |
 | **Systemd (Linux)** | 原生 Linux 服务 | `sudo systemctl start agentops` |
 | **本地开发** | 开发调试 | `uvicorn main:app --reload` |
+
+---
+
+## ✅ 质量与安全
+
+- 使用 `python -m unittest discover -s tests -v` 运行单元测试，覆盖结果解析、路径越界拒绝和脚本超时终止。
+- GitHub Actions 在每次 Push 和 Pull Request 时执行语法检查、单元测试及 Docker 镜像构建。
+- 脚本仅允许从 `scripts/` 目录执行，并通过 `SCRIPT_TIMEOUT_SECONDS` 限制最长运行时间。
+- 本项目默认面向本地或可信网络使用；暴露到公网前应增加身份认证、HTTPS 和访问控制。
 
 ---
 
