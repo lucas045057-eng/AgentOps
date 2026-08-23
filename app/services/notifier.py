@@ -26,7 +26,7 @@ async def send_failure_notification(
         logger.warning("邮件未配置，跳过发送通知")
         return
     
-    subject = f"[AgentOps] 脚本 {script_id} 执行失败"
+    subject = f"[AirDrop] 脚本 {script_id} 执行失败"
     body = f"""
 脚本 ID: {script_id}
 执行 ID: {execution_id if execution_id else '未记录'}

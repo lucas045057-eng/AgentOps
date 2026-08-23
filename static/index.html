@@ -1,693 +1,488 @@
-<!DOCTYPE html>
-<html lang="zh">
+<!doctype html>
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentOps 管理面板</title>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1400px;
-            margin: auto;
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 20px;
-        }
-        .card {
-            background: white;
-            border-radius: 8px;
-            padding: 16px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-        }
-        .card h3 {
-            margin-top: 0;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-        }
-        .form-group {
-            margin-bottom: 12px;
-        }
-        label {
-            display: block;
-            font-weight: 500;
-            font-size: 0.9em;
-            color: #555;
-            margin-bottom: 4px;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 0.95em;
-        }
-        textarea { resize: vertical; }
-        .btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: background 0.2s;
-        }
-        .btn:hover { background: #0056b3; }
-        .btn-success { background: #28a745; }
-        .btn-success:hover { background: #1e7e34; }
-        .btn-sm { padding: 4px 12px; font-size: 0.85em; }
-        .flex { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .status-badge {
-            padding: 2px 10px;
-            border-radius: 12px;
-            color: white;
-            font-size: 0.8em;
-            display: inline-block;
-        }
-        .status-success { background: #28a745; }
-        .status-failed { background: #dc3545; }
-        .status-running { background: #ffc107; color: #333; }
-        .summary-stats {
-            display: flex;
-            gap: 20px;
-            margin: 10px 0;
-        }
-        .stat-item {
-            background: #f8f9fa;
-            padding: 8px 16px;
-            border-radius: 6px;
-            text-align: center;
-        }
-        .stat-item .number {
-            font-size: 1.8em;
-            font-weight: 600;
-        }
-        .stat-item .label {
-            font-size: 0.8em;
-            color: #666;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9em;
-        }
-        th, td {
-            padding: 8px 10px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        th {
-            background: #f8f9fa;
-            font-weight: 600;
-        }
-        .output-cell {
-            max-width: 200px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .refresh-btn {
-            margin: 5px 0;
-            padding: 4px 12px;
-            background: #17a2b8;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85em;
-        }
-        .refresh-btn:hover { background: #138496; }
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #333;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 6px;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-        .toast.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .toast.success { background: #28a745; }
-        .toast.error { background: #dc3545; }
-        .execution-result {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            border-left: 4px solid #007bff;
-            font-size: 0.9em;
-        }
-        .clickable {
-            cursor: pointer;
-            user-select: none;
-        }
-        .clickable:hover {
-            background: #f8f9fa;
-        }
-        .expand-icon {
-            display: inline-block;
-            transition: transform 0.2s;
-            font-size: 0.8em;
-            margin-right: 6px;
-        }
-        .expand-icon.open {
-            transform: rotate(90deg);
-        }
-        .account-detail-row {
-            background: #f8f9fa;
-        }
-        .account-detail-row td {
-            padding: 0;
-        }
-        .account-detail-content {
-            padding: 10px 15px;
-            background: #fafafa;
-            border-top: 2px solid #e9ecef;
-        }
-        .account-detail-content table {
-            font-size: 0.85em;
-        }
-        .account-detail-content table th {
-            background: #e9ecef;
-            font-size: 0.8em;
-        }
-        .account-detail-content .summary-bar {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 8px;
-            font-size: 0.9em;
-        }
-        .account-detail-content .summary-bar span {
-            background: #e9ecef;
-            padding: 2px 12px;
-            border-radius: 12px;
-        }
-        .account-detail-content .summary-bar .ok { color: #28a745; }
-        .account-detail-content .summary-bar .fail { color: #dc3545; }
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #007bff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .address-cell {
-            font-family: monospace;
-            font-size: 0.85em;
-        }
-        @media (max-width: 800px) {
-            .container { grid-template-columns: 1fr; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AirDrop 运行中心</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: rgba(18, 27, 49, .86);
+      --panel-strong: #151f38;
+      --line: rgba(148, 163, 184, .16);
+      --text: #eef4ff;
+      --muted: #93a4c4;
+      --blue: #60a5fa;
+      --cyan: #22d3ee;
+      --green: #34d399;
+      --yellow: #fbbf24;
+      --red: #fb7185;
+      --purple: #a78bfa;
+      --shadow: 0 18px 60px rgba(0, 0, 0, .24);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(37, 99, 235, .22), transparent 30%),
+        radial-gradient(circle at 90% 10%, rgba(14, 165, 233, .16), transparent 28%),
+        var(--bg);
+      font: 14px/1.55 Inter, "Segoe UI", "Microsoft YaHei", sans-serif;
+      min-height: 100vh;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar {
+      border-right: 1px solid var(--line);
+      background: rgba(8, 13, 28, .76);
+      padding: 24px 16px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; padding: 4px 10px 30px; }
+    .brand-mark {
+      width: 38px; height: 38px; border-radius: 12px;
+      display: grid; place-items: center; font-weight: 800;
+      color: #06111f; background: linear-gradient(135deg, var(--cyan), var(--blue));
+    }
+    .brand strong { display: block; font-size: 17px; letter-spacing: .2px; }
+    .brand small { color: var(--muted); }
+    .nav-title { color: #637494; font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; padding: 0 12px 8px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; color: var(--muted);
+      padding: 11px 12px; border-radius: 10px; margin: 3px 0;
+    }
+    .nav-item.active, .nav-item:hover { color: var(--text); background: rgba(96, 165, 250, .12); }
+    .side-note {
+      position: absolute; left: 16px; right: 16px; bottom: 22px;
+      padding: 13px; border: 1px solid var(--line); border-radius: 12px;
+      background: rgba(21, 31, 56, .7); color: var(--muted); font-size: 12px;
+    }
+    .side-note strong { color: var(--text); display: block; margin-bottom: 5px; }
+    main { max-width: 1600px; width: 100%; margin: 0 auto; padding: 28px clamp(18px, 4vw, 48px) 50px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 26px; position: sticky; top: 0; z-index: 10; padding: 12px 0 16px; background: linear-gradient(180deg, rgba(11, 16, 32, .96) 68%, rgba(11, 16, 32, 0)); backdrop-filter: blur(14px); }
+    .eyebrow { color: var(--cyan); font-size: 12px; letter-spacing: 1.4px; text-transform: uppercase; }
+    h1 { margin: 5px 0 4px; font-size: clamp(25px, 3vw, 37px); letter-spacing: -.8px; }
+    .subtitle { color: var(--muted); margin: 0; }
+    .top-actions { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; justify-content: flex-end; }
+    .api-box { display: flex; gap: 7px; align-items: center; }
+    input, select {
+      color: var(--text); background: rgba(8, 13, 28, .76); border: 1px solid var(--line);
+      border-radius: 9px; padding: 10px 12px; outline: none;
+    }
+    input:focus, select:focus { border-color: rgba(96, 165, 250, .75); box-shadow: 0 0 0 3px rgba(96, 165, 250, .12); }
+    input::placeholder { color: #617292; }
+    .btn {
+      border: 0; border-radius: 9px; padding: 10px 14px; color: #07111f;
+      background: linear-gradient(135deg, #7dd3fc, #60a5fa); font-weight: 700;
+    }
+    .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .btn.secondary { color: var(--text); background: rgba(148, 163, 184, .13); border: 1px solid var(--line); }
+    .btn.green { background: linear-gradient(135deg, #6ee7b7, #34d399); }
+    .btn.warn { color: #211405; background: linear-gradient(135deg, #fde68a, #fbbf24); }
+    .btn.danger { color: #fff7ed; background: linear-gradient(135deg, #fb7185, #f97316); }
+    .btn:disabled { cursor: not-allowed; opacity: .45; transform: none; }
+    .health { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); white-space: nowrap; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); box-shadow: 0 0 12px currentColor; }
+    .dot.ok { background: var(--green); color: var(--green); }
+    .dot.bad { background: var(--red); color: var(--red); }
+    .grid { display: grid; gap: 16px; }
+    .stats { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-bottom: 16px; }
+    .card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+      box-shadow: var(--shadow); backdrop-filter: blur(16px);
+    }
+    .stat { padding: 18px 19px; position: relative; overflow: hidden; }
+    .stat::after { content: ""; position: absolute; width: 80px; height: 80px; right: -30px; top: -30px; border-radius: 50%; background: rgba(96, 165, 250, .1); }
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-value { font-size: 29px; font-weight: 800; margin-top: 5px; }
+    .stat-hint { color: #6f82a5; font-size: 11px; margin-top: 3px; }
+    .notice { padding: 14px 17px; margin-bottom: 16px; border-left: 3px solid var(--yellow); color: #d9e2f2; background: rgba(251, 191, 36, .08); }
+    .notice strong { color: #fde68a; }
+    .section { padding: 20px; margin-bottom: 16px; scroll-margin-top: 92px; }
+    .section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 16px; }
+    .section-head h2 { margin: 0; font-size: 18px; }
+    .section-head p { color: var(--muted); margin: 4px 0 0; font-size: 12px; }
+    .runner-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .runner-card { padding: 18px; border: 1px solid var(--line); border-radius: 13px; background: rgba(8, 13, 28, .35); }
+    .runner-card .runner-top { display: flex; justify-content: space-between; align-items: center; }
+    .runner-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; font-size: 20px; background: rgba(96, 165, 250, .14); }
+    .runner-card h3 { margin: 12px 0 3px; }
+    .runner-card p { color: var(--muted); margin: 0 0 12px; font-size: 12px; }
+    .mini-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+    .mini { color: var(--muted); padding: 5px 8px; border-radius: 7px; background: rgba(148, 163, 184, .09); font-size: 11px; }
+    .mini b { color: var(--text); margin-right: 3px; }
+    .toolbar { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+    .toolbar input { min-width: 210px; flex: 1; }
+    .filter { padding: 8px 10px; font-size: 12px; }
+    .script-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .script-card { padding: 17px; min-width: 0; border: 1px solid var(--line); border-radius: 13px; background: rgba(8, 13, 28, .32); display: flex; flex-direction: column; gap: 11px; }
+    #workflowGrid { grid-template-columns: repeat(auto-fit, minmax(285px, 1fr)); }
+    .workflow-card { padding: 18px; min-width: 0; min-height: 208px; border: 1px solid rgba(34, 211, 238, .2); border-radius: 13px; background: linear-gradient(145deg, rgba(34, 211, 238, .08), rgba(8, 13, 28, .34)); display: flex; flex-direction: column; gap: 11px; transition: border-color .2s, transform .2s, box-shadow .2s; }
+    .workflow-card:hover { border-color: rgba(34, 211, 238, .5); }
+    .workflow-card:hover { transform: translateY(-2px); box-shadow: 0 12px 34px rgba(0, 0, 0, .18); }
+    .workflow-card:has(.status.running), .workflow-card:has(.status.queued) { border-color: rgba(34, 211, 238, .55); }
+    .workflow-card:has(.status.failed), .workflow-card:has(.status.cancelled), .workflow-card:has(.status.timeout), .workflow-card:has(.status.crashed) { border-color: rgba(251, 113, 133, .42); }
+    .workflow-card h3 { margin: 0; font-size: 15px; }
+    .workflow-card p { margin: 0; color: var(--muted); font-size: 12px; }
+    .workflow-card .workflow-top, .workflow-card .workflow-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .workflow-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; }
+    .workflow-summary { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+    .summary-pill { color: var(--muted); padding: 5px 9px; border: 1px solid var(--line); border-radius: 99px; background: rgba(148, 163, 184, .08); font-size: 11px; }
+    .summary-pill strong { color: var(--text); margin-right: 3px; }
+    .run-id { color: #7285a8; font: 11px ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .script-card:hover { border-color: rgba(96, 165, 250, .45); }
+    .script-card h3 { margin: 0; font-size: 14px; line-height: 1.4; }
+    .script-path { color: #7183a5; font: 11px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; word-break: break-all; min-height: 32px; }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip, .status {
+      display: inline-flex; align-items: center; border-radius: 99px; padding: 4px 8px; font-size: 11px; font-weight: 700;
+      background: rgba(148, 163, 184, .12); color: var(--muted);
+    }
+    .chip.browser { color: #bae6fd; background: rgba(34, 211, 238, .13); }
+    .chip.web3 { color: #ddd6fe; background: rgba(167, 139, 250, .14); }
+    .chip.ready, .status.success, .status.already_done, .status.no_work, .status.skipped { color: #bbf7d0; background: rgba(52, 211, 153, .14); }
+    .chip.manual, .status.manual_required, .status.unknown { color: #fde68a; background: rgba(251, 191, 36, .14); }
+    .chip.windows { color: #fecdd3; background: rgba(251, 113, 133, .14); }
+    .status.failed, .status.crashed, .status.timeout { color: #fecdd3; background: rgba(251, 113, 133, .14); }
+    .status.cancelled { color: #fed7aa; background: rgba(249, 115, 22, .14); }
+    .status.queued, .status.running { color: #bae6fd; background: rgba(34, 211, 238, .13); }
+    .script-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: auto; }
+    .muted { color: var(--muted); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 720px; }
+    th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    th { color: #8192b2; font-size: 11px; text-transform: uppercase; letter-spacing: .7px; font-weight: 600; }
+    td { color: #dce5f5; font-size: 13px; }
+    .output { max-width: 320px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .empty { color: var(--muted); text-align: center; padding: 32px 12px; }
+    .advanced { padding: 0; overflow: hidden; }
+    .advanced summary { cursor: pointer; list-style: none; padding: 18px 20px; font-weight: 700; }
+    .advanced summary::-webkit-details-marker { display: none; }
+    .advanced summary::after { content: "+"; float: right; color: var(--muted); font-size: 20px; line-height: 1; }
+    .advanced[open] summary::after { content: "−"; }
+    .advanced-body { padding: 0 20px 20px; border-top: 1px solid var(--line); }
+    .form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+    .form-field label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+    .form-field input, .form-field select { width: 100%; }
+    .form-actions { display: flex; align-items: end; gap: 8px; }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 20; display: none; place-items: center; padding: 20px; background: rgba(2, 6, 23, .72); }
+    .modal-backdrop.open { display: grid; }
+    .modal { width: min(760px, 100%); max-height: 86vh; overflow: auto; padding: 22px; background: #111a31; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+    .modal-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 14px; }
+    .modal-head h2 { margin: 0; font-size: 18px; }
+    .close { background: none; border: 0; color: var(--muted); font-size: 24px; }
+    pre { white-space: pre-wrap; word-break: break-word; color: #cbd5e1; background: #080d1c; border: 1px solid var(--line); padding: 12px; border-radius: 9px; font-size: 12px; max-height: 300px; overflow: auto; }
+    .toast { position: fixed; right: 22px; bottom: 22px; z-index: 30; transform: translateY(20px); opacity: 0; pointer-events: none; transition: .2s; padding: 12px 15px; border: 1px solid var(--line); border-radius: 10px; color: var(--text); background: #17213a; box-shadow: var(--shadow); }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { border-color: rgba(251, 113, 133, .6); }
+    .toast.success { border-color: rgba(52, 211, 153, .6); }
+    @media (max-width: 1180px) { .script-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 820px) { .shell { display: block; } .sidebar { position: static; height: auto; padding: 15px; border-right: 0; border-bottom: 1px solid var(--line); } .side-note { display: none; } .nav-title, .nav-item { display: none; } .brand { padding-bottom: 4px; } .topbar { display: block; position: static; padding-top: 0; } .top-actions { justify-content: flex-start; margin-top: 15px; } .runner-grid, .script-grid, .form-grid { grid-template-columns: 1fr; } .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  </style>
 </head>
 <body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">AO</div><div><strong>AirDrop</strong><small>运行中心</small></div></div>
+      <div class="nav-title">Workspace</div>
+      <div class="nav-item active">⌂ <span>总览</span></div>
+      <div class="nav-item">◈ <span>脚本目录</span></div>
+      <div class="nav-item">◷ <span>执行记录</span></div>
+      <div class="nav-item">⚙ <span>运行配置</span></div>
+      <div class="side-note"><strong>当前策略</strong>原始脚本只读挂载。需要输入或 Windows 环境的脚本会先提示，不会被强行启动。</div>
+    </aside>
 
-<div class="toast" id="toast"></div>
-
-<div class="container">
-
-    <!-- 左列：操作面板 -->
-    <div>
-        <!-- 今日概况卡片 -->
-        <div class="card" id="todayCard">
-            <h3>📊 今日执行概况</h3>
-            <div class="summary-stats" id="todayStats">
-                <div class="stat-item"><div class="number" id="todayTotal">-</div><div class="label">总数</div></div>
-                <div class="stat-item"><div class="number" style="color:green" id="todaySuccess">-</div><div class="label">成功</div></div>
-                <div class="stat-item"><div class="number" style="color:red" id="todayFailed">-</div><div class="label">失败</div></div>
-            </div>
-            <button class="refresh-btn" onclick="loadToday()">🔄 刷新</button>
+    <main>
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">Agent execution control plane</div>
+          <h1>运行中心</h1>
+          <p class="subtitle">统一查看脚本能力、执行状态与运行日志。</p>
         </div>
-
-        <!-- 创建项目 -->
-        <div class="card">
-            <h3>📁 新建项目</h3>
-            <div class="form-group">
-                <label>项目名称</label>
-                <input type="text" id="projectName" placeholder="例如：SimpleChain">
-            </div>
-            <div class="form-group">
-                <label>项目 URL</label>
-                <input type="text" id="projectUrl" placeholder="https://example.com">
-            </div>
-            <button class="btn btn-success" onclick="createProject()">创建项目</button>
+        <div class="top-actions">
+          <div class="health"><span id="healthDot" class="dot"></span><span id="healthText">检查服务中</span></div>
+          <div class="api-box"><input id="apiKey" type="password" placeholder="API Key" aria-label="API Key"><button class="btn secondary" id="saveKey">保存</button></div>
+          <button class="btn secondary" id="autoRun" disabled title="后台自动运行已关闭">自动运行已关闭</button><button class="btn" id="refreshAll">刷新数据</button>
         </div>
+      </header>
 
-        <!-- 创建任务 -->
-        <div class="card">
-            <h3>📋 新建任务</h3>
-            <div class="form-group">
-                <label>所属项目</label>
-                <select id="taskProject"><option value="">-- 请先加载项目 --</option></select>
-            </div>
-            <div class="form-group">
-                <label>任务名称</label>
-                <input type="text" id="taskName" placeholder="例如：每日签到">
-            </div>
-            <div class="form-group">
-                <label>任务描述</label>
-                <input type="text" id="taskDesc" placeholder="可选描述">
-            </div>
-            <button class="btn btn-success" onclick="createTask()">创建任务</button>
+      <section class="grid stats">
+        <div class="card stat"><div class="stat-label">今日执行</div><div class="stat-value" id="statTotal">—</div><div class="stat-hint">全部执行记录</div></div>
+        <div class="card stat"><div class="stat-label">确认完成</div><div class="stat-value" id="statSuccess" style="color:var(--green)">—</div><div class="stat-hint">成功 / 已完成 / 无任务</div></div>
+        <div class="card stat"><div class="stat-label">需要关注</div><div class="stat-value" id="statFailed" style="color:var(--yellow)">—</div><div class="stat-hint">失败、未知或人工处理</div></div>
+        <div class="card stat"><div class="stat-label">Web3 脚本</div><div class="stat-value" id="statWeb3" style="color:var(--purple)">—</div><div class="stat-hint">钱包 / 链上 / API</div></div>
+        <div class="card stat"><div class="stat-label">浏览器脚本</div><div class="stat-value" id="statBrowser" style="color:var(--cyan)">—</div><div class="stat-hint">Chrome / Playwright / CDP</div></div>
+      </section>
+
+      <section class="card section" id="progressSection">
+        <div class="section-head"><div><h2>项目进度</h2><p>独立于脚本运行，用于跟进项目、账号和当前进展。</p></div><button class="btn secondary" id="refreshProgress">刷新进度</button></div>
+        <form id="progressForm" class="form-grid">
+          <div class="form-field"><label>名称</label><input id="progressName" required placeholder="项目名称"></div>
+          <div class="form-field"><label>网址</label><input id="progressUrl" type="url" placeholder="https://example.com"></div>
+          <div class="form-field"><label>时间</label><input id="progressTime" type="datetime-local"></div>
+          <div class="form-field"><label>进度</label><input id="progressStatus" placeholder="未开始 / 进行中 / 已完成"></div>
+          <div class="form-field"><label>账号</label><input id="progressAccount" placeholder="项目账号"></div>
+          <div class="form-field"><label>备注</label><input id="progressNotes" placeholder="进展、问题或下一步"></div>
+          <div class="form-actions"><button class="btn green" type="submit">新增项目</button><button class="btn secondary" type="button" id="cancelProgressEdit" hidden>取消编辑</button></div>
+        </form>
+        <div class="table-wrap"><table><thead><tr><th>名称</th><th>网址</th><th>时间</th><th>进度</th><th>账号</th><th>备注</th><th></th></tr></thead><tbody id="progressRows"><tr><td colspan="7" class="empty">暂无项目进度记录</td></tr></tbody></table></div>
+      </section>
+
+      <div class="card notice"><strong>运行提示：</strong>“需要人工”不是执行失败。它表示脚本包含控制台输入、Windows 专属依赖或人工登录步骤，AirDrop 已在启动前安全拦截。只有确认链上结果、接口完成结果或脚本输出结构化成功状态，才会计入完成。</div>
+
+      <section class="card section">
+        <div class="section-head"><div><h2>运行架构</h2><p>先看脚本是否适合当前 Linux Docker Worker，再决定是否执行。</p></div><button class="btn secondary" id="syncCatalog">同步脚本目录</button></div>
+        <div class="grid runner-grid">
+          <div class="runner-card"><div class="runner-top"><div class="runner-icon">◈</div><span class="chip web3">WEB3 RUNNER</span></div><h3>Web3 / 钱包任务</h3><p>处理链上交互、钱包签名、积分、签到和 API 任务。</p><div class="mini-stats"><span class="mini"><b id="web3Total">—</b>全部</span><span class="mini"><b id="web3Ready">—</b>可尝试</span><span class="mini"><b id="web3Manual">—</b>需处理</span></div></div>
+          <div class="runner-card"><div class="runner-top"><div class="runner-icon">⌁</div><span class="chip browser">BROWSER RUNNER</span></div><h3>浏览器 / CDP 任务</h3><p>处理 Chromium、Playwright、Chrome CDP 和页面操作任务。</p><div class="mini-stats"><span class="mini"><b id="browserTotal">—</b>全部</span><span class="mini"><b id="browserReady">—</b>可尝试</span><span class="mini"><b id="browserManual">—</b>需处理</span></div></div>
         </div>
+      </section>
 
-        <!-- 创建脚本 -->
-        <div class="card">
-            <h3>📜 新建脚本</h3>
-            <div class="form-group">
-                <label>所属任务</label>
-                <select id="scriptTask"><option value="">-- 请先加载任务 --</option></select>
-            </div>
-            <div class="form-group">
-                <label>脚本名称</label>
-                <input type="text" id="scriptName" placeholder="例如：daily_checkin.py">
-            </div>
-            <div class="form-group">
-                <label>脚本路径（相对项目根目录）</label>
-                <input type="text" id="scriptPath" placeholder="scripts/Simple/daily_checkin.py">
-            </div>
-            <button class="btn btn-success" onclick="createScript()">创建脚本</button>
+      <section class="card section" id="workflowsSection">
+        <div class="section-head"><div><h2>自动化工作流</h2><p id="workflowHint">每个项目对应一条可追踪的工作流，执行过程会留下运行、步骤和日志记录。</p><div id="workflowSummary" class="workflow-summary"></div></div><button class="btn secondary" id="refreshWorkflows">刷新工作流</button></div>
+        <div id="workflowGrid" class="grid script-grid"><div class="empty">正在加载工作流…</div></div>
+      </section>
+
+      <section class="card section" id="scriptsSection">
+        <div class="section-head"><div><h2>脚本目录</h2><p id="catalogHint">正在读取脚本运行能力……</p></div><div class="toolbar"><input id="search" placeholder="搜索名称或路径"><select id="filter" class="filter"><option value="all">全部脚本</option><option value="ready">当前可尝试</option><option value="manual">需要人工输入</option><option value="windows">需要 Windows</option><option value="browser">浏览器脚本</option><option value="web3">Web3 脚本</option></select></div></div>
+        <div id="scriptGrid" class="grid script-grid"><div class="empty">正在加载脚本目录……</div></div>
+      </section>
+
+      <section class="card section">
+        <div class="section-head"><div><h2>最近执行</h2><p>点击“详情”查看执行状态、账号结果和日志文件。</p></div><div class="toolbar"><button class="btn secondary" id="refreshExecutions">刷新记录</button><button class="btn danger" id="clearHistory">清除记录</button></div></div>
+        <div class="table-wrap"><table><thead><tr><th>执行 ID</th><th>脚本</th><th>运行器</th><th>状态</th><th>摘要</th><th>时间</th><th></th></tr></thead><tbody id="executionRows"><tr><td colspan="7" class="empty">暂无执行记录</td></tr></tbody></table></div>
+      </section>
+
+      <details class="card advanced">
+        <summary>高级管理：创建项目、任务和脚本</summary>
+        <div class="advanced-body">
+          <div class="form-grid">
+            <div class="form-field"><label>项目名称</label><input id="projectName" placeholder="例如：SimpleChain"></div>
+            <div class="form-field"><label>项目 URL</label><input id="projectUrl" placeholder="https://example.com"></div>
+            <div class="form-actions"><button class="btn green" id="createProject">创建项目</button></div>
+            <div class="form-field"><label>任务所属项目</label><select id="taskProject"></select></div>
+            <div class="form-field"><label>任务名称</label><input id="taskName" placeholder="例如：每日签到"></div>
+            <div class="form-actions"><button class="btn green" id="createTask">创建任务</button></div>
+            <div class="form-field"><label>脚本所属任务</label><select id="scriptTask"></select></div>
+            <div class="form-field"><label>脚本名称</label><input id="scriptName" placeholder="daily_checkin.py"></div>
+            <div class="form-actions"><button class="btn green" id="createScript">创建脚本</button></div>
+          </div>
+          <div class="form-grid"><div class="form-field"><label>脚本路径（相对 AirDrop 根目录）</label><input id="scriptPath" placeholder="scripts/Simple/Simple.py"></div></div>
         </div>
+      </details>
+    </main>
+  </div>
 
-        <!-- 执行脚本 -->
-        <div class="card">
-            <h3>▶️ 执行脚本</h3>
-            <div class="form-group">
-                <label>选择脚本</label>
-                <select id="executeScript"><option value="">-- 请先加载脚本 --</option></select>
-            </div>
-            <button class="btn btn-primary" onclick="executeScript()">立即执行</button>
-            <div id="executeResult" class="execution-result" style="display:none;"></div>
-        </div>
-    </div>
+  <div class="modal-backdrop" id="modalBackdrop"><div class="modal"><div class="modal-head"><h2 id="modalTitle">执行详情</h2><button class="close" id="closeModal">×</button></div><div id="modalBody"></div></div></div>
+  <div class="toast" id="toast"></div>
 
-    <!-- 右列：记录列表 -->
-    <div>
-        <div class="card">
-            <h3>📋 今日执行记录</h3>
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead><tr><th style="width:30px;"></th><th>ID</th><th>脚本</th><th>状态</th><th>输出</th><th>时间</th></tr></thead>
-                    <tbody id="recordsTable"><tr><td colspan="6" style="text-align:center;color:#999;">暂无记录</td></tr></tbody>
-                </table>
-            </div>
-        </div>
-        <div class="card">
-            <h3>📌 快捷查看</h3>
-            <div class="flex">
-                <button class="btn btn-sm" onclick="loadProjects()">刷新项目</button>
-                <button class="btn btn-sm" onclick="loadTasks()">刷新任务</button>
-                <button class="btn btn-sm" onclick="loadScripts()">刷新脚本</button>
-            </div>
-            <div style="margin-top:10px;font-size:0.9em;">
-                <div><strong>项目数：</strong><span id="projectCount">-</span></div>
-                <div><strong>任务数：</strong><span id="taskCount">-</span></div>
-                <div><strong>脚本数：</strong><span id="scriptCount">-</span></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-// ============================================================
-// 工具函数：显示 Toast 消息
-// ============================================================
-function showToast(msg, type='success') {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast ' + type + ' show';
-    clearTimeout(t._hide);
-    t._hide = setTimeout(() => { t.classList.remove('show'); }, 3000);
-}
-
-// ============================================================
-// 通用 API 请求封装
-// ============================================================
-async function apiRequest(method, url, body=null) {
-    const opts = {
-        method: method,
-        headers: { 'Content-Type': 'application/json' }
+  <script>
+    const state = { catalog: [], scripts: [], executions: [], projects: [], tasks: [], workflows: [], runs: [], windowsWorker: false };
+    const progressState = { items: [], editingId: null };
+    const SUCCESS = new Set(['success', 'already_done', 'skipped', 'no_work']);
+    const $ = (id) => document.getElementById(id);
+    const esc = (value) => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    const key = () => localStorage.getItem('airdrop_api_key') || '';
+    const toast = (message, type='success') => { const el=$('toast'); el.textContent=message; el.className=`toast show ${type}`; clearTimeout(toast.timer); toast.timer=setTimeout(()=>el.className='toast', 3200); };
+    const specFor = (script) => state.catalog.find(item => item.path.replaceAll('\\','/') === String(script.path || '').replaceAll('\\','/')) || { runner: 'legacy', platform: 'linux', interactive: false, name: script.name };
+    const capability = (spec) => {
+      if (spec.platform === 'windows_host') return state.windowsWorker ? { label: 'Windows Worker', cls: 'ready', ready: true } : { label: '需要 Windows', cls: 'windows', ready: false };
+      if (spec.interactive && !spec.auto_input) return { label: '需要人工输入', cls: 'manual', ready: false };
+      if (spec.auto_input) return { label: '自动输入适配', cls: 'ready', ready: true };
+      return { label: '可尝试自动运行', cls: 'ready', ready: true };
     };
-    if (body) opts.body = JSON.stringify(body);
-    const res = await fetch(url, opts);
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
-    }
-    return res.json();
-}
+    const statusLabel = (status) => ({success:'完成', already_done:'已完成', skipped:'已跳过', no_work:'无任务', manual_required:'需要人工', unknown:'未知', failed:'失败', crashed:'崩溃', timeout:'超时', cancelled:'已中断', queued:'排队中', running:'运行中'}[status] || status || '未知');
 
-// ============================================================
-// 加载数据并填充下拉框
-// ============================================================
-async function loadProjects() {
-    try {
-        const data = await apiRequest('GET', '/projects');
-        const select = document.getElementById('taskProject');
-        select.innerHTML = '<option value="">-- 选择项目 --</option>';
-        data.data.forEach(p => {
-            select.innerHTML += `<option value="${p.id}">${p.name} (ID:${p.id})</option>`;
-        });
-        document.getElementById('projectCount').textContent = data.data.length;
-    } catch(e) {
-        showToast('加载项目失败: '+e.message, 'error');
-    }
-}
-
-async function loadTasks() {
-    try {
-        const data = await apiRequest('GET', '/tasks');
-        const select = document.getElementById('scriptTask');
-        select.innerHTML = '<option value="">-- 选择任务 --</option>';
-        data.forEach(t => {
-            select.innerHTML += `<option value="${t.id}">${t.name} (ID:${t.id})</option>`;
-        });
-        document.getElementById('taskCount').textContent = data.length;
-    } catch(e) {
-        showToast('加载任务失败: '+e.message, 'error');
-    }
-}
-
-async function loadScripts() {
-    try {
-        const data = await apiRequest('GET', '/scripts');
-        const select = document.getElementById('executeScript');
-        select.innerHTML = '<option value="">-- 选择脚本 --</option>';
-        data.forEach(s => {
-            select.innerHTML += `<option value="${s.id}">${s.name} (ID:${s.id})</option>`;
-        });
-        document.getElementById('scriptCount').textContent = data.length;
-    } catch(e) {
-        showToast('加载脚本失败: '+e.message, 'error');
-    }
-}
-
-// ============================================================
-// 展开/收起账号明细
-// ============================================================
-const expandedRows = new Set();
-
-async function toggleAccounts(executionId, event) {
-    // 阻止冒泡，避免点击展开时触发行点击
-    if (event) event.stopPropagation();
-
-    const rowId = `account-row-${executionId}`;
-    const row = document.getElementById(rowId);
-
-    if (row) {
-        // 已存在，切换显示
-        if (row.style.display === 'none') {
-            row.style.display = 'table-row';
-            expandedRows.add(executionId);
-        } else {
-            row.style.display = 'none';
-            expandedRows.delete(executionId);
-        }
-        return;
+    async function api(method, url, body) {
+      const options = { method, headers: { 'Content-Type': 'application/json' } };
+      if (key()) options.headers['X-API-Key'] = key();
+      if (body !== undefined) options.body = JSON.stringify(body);
+      const response = await fetch(url, options);
+      const text = await response.text();
+      let data; try { data = text ? JSON.parse(text) : {}; } catch { data = { detail: text }; }
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${data.detail || text || '请求失败'}`);
+      return data;
     }
 
-    // 插入展开行
-    const mainRow = document.getElementById(`main-row-${executionId}`);
-    if (!mainRow) return;
-
-    const newRow = document.createElement('tr');
-    newRow.id = rowId;
-    newRow.className = 'account-detail-row';
-    newRow.style.display = 'table-row';
-
-    const td = document.createElement('td');
-    td.colSpan = 6;
-    td.className = 'account-detail-content';
-    td.innerHTML = `<div class="loading-spinner" style="margin:10px auto;display:block;"></div> 加载中...`;
-    newRow.appendChild(td);
-
-    // 在 mainRow 后面插入
-    mainRow.parentNode.insertBefore(newRow, mainRow.nextSibling);
-
-    try {
-        const data = await apiRequest('GET', `/executions/${executionId}/accounts`);
-        const accounts = data.accounts || [];
-        const total = accounts.length;
-        const success = accounts.filter(a => a.status === 'success').length;
-        const failed = total - success;
-
-        let html = `
-            <div class="summary-bar">
-                <span>共 <strong>${total}</strong> 个账号</span>
-                <span class="ok">✅ 成功 <strong>${success}</strong></span>
-                <span class="fail">❌ 失败 <strong>${failed}</strong></span>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>地址</th>
-                        <th>名称</th>
-                        <th>状态</th>
-                        <th>消息</th>
-                        <th>积分</th>
-                        <th>错误</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
-        accounts.forEach((acc, i) => {
-            const statusClass = acc.status === 'success' ? 'status-success' : 'status-failed';
-            const address = acc.address || '-';
-            const shortAddr = address.length > 14 ? address.slice(0, 6) + '...' + address.slice(-4) : address;
-            html += `
-                <tr>
-                    <td>${i + 1}</td>
-                    <td class="address-cell" title="${address}">${shortAddr}</td>
-                    <td>${acc.name || '-'}</td>
-                    <td><span class="status-badge ${statusClass}">${acc.status}</span></td>
-                    <td>${acc.message || '-'}</td>
-                    <td>${acc.points || 0}</td>
-                    <td style="color:red;font-size:0.85em;">${acc.error || ''}</td>
-                </tr>
-            `;
-        });
-
-        html += `</tbody></table>`;
-        td.innerHTML = html;
-        expandedRows.add(executionId);
-
-    } catch(e) {
-        td.innerHTML = `<div style="color:red;">加载失败: ${e.message}</div>`;
+    function setHealth(ok, message) { $('healthDot').className = `dot ${ok ? 'ok' : 'bad'}`; $('healthText').textContent = message; }
+    function renderStats(today) {
+      $('statTotal').textContent = today.total ?? 0;
+      $('statSuccess').textContent = today.success ?? 0;
+      $('statFailed').textContent = today.failed ?? 0;
+      const web3 = state.catalog.filter(x => x.runner === 'web3').length;
+      const browser = state.catalog.filter(x => x.runner === 'browser').length;
+      $('statWeb3').textContent = web3; $('statBrowser').textContent = browser;
     }
-}
-
-// ============================================================
-// 今日概况 & 记录列表
-// ============================================================
-async function loadToday() {
-    try {
-        const data = await apiRequest('GET', '/dashboard/today');
-        document.getElementById('todayTotal').textContent = data.total;
-        document.getElementById('todaySuccess').textContent = data.success;
-        document.getElementById('todayFailed').textContent = data.failed;
-
-        const tbody = document.getElementById('recordsTable');
-        if (data.records.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">今日暂无记录</td></tr>';
-            return;
-        }
-        let html = '';
-        data.records.forEach(r => {
-            const statusClass = r.status === 'success' ? 'status-success' : (r.status === 'running' ? 'status-running' : 'status-failed');
-            const output = r.output || r.error || '-';
-            const isExpanded = expandedRows.has(r.id);
-            const expandIcon = isExpanded ? '▼' : '▶';
-            html += `
-                <tr id="main-row-${r.id}" class="clickable" onclick="toggleAccounts(${r.id}, event)">
-                    <td><span class="expand-icon ${isExpanded ? 'open' : ''}">${expandIcon}</span></td>
-                    <td>${r.id}</td>
-                    <td>${r.script_id}</td>
-                    <td><span class="status-badge ${statusClass}">${r.status}</span></td>
-                    <td class="output-cell" title="${output.replace(/"/g, '&quot;')}">${output.substring(0, 80)}</td>
-                    <td>${new Date(r.created_at).toLocaleString()}</td>
-                </tr>
-                <tr id="account-row-${r.id}" class="account-detail-row" style="display:${isExpanded ? 'table-row' : 'none'};">
-                    <td colspan="6" class="account-detail-content">
-                        <div class="loading-spinner" style="margin:10px auto;display:block;"></div> 加载中...
-                    </td>
-                </tr>
-            `;
-        });
-        tbody.innerHTML = html;
-
-        // 自动加载已展开的账号明细
-        for (const id of expandedRows) {
-            const row = document.getElementById(`account-row-${id}`);
-            if (row && row.style.display !== 'none') {
-                // 重新加载内容（如果是初始状态或加载失败）
-                const td = row.querySelector('td');
-                if (td && td.innerHTML.includes('加载中')) {
-                    // 触发加载
-                    const data = await apiRequest('GET', `/executions/${id}/accounts`);
-                    const accounts = data.accounts || [];
-                    const total = accounts.length;
-                    const success = accounts.filter(a => a.status === 'success').length;
-                    const failed = total - success;
-                    let html2 = `
-                        <div class="summary-bar">
-                            <span>共 <strong>${total}</strong> 个账号</span>
-                            <span class="ok">✅ 成功 <strong>${success}</strong></span>
-                            <span class="fail">❌ 失败 <strong>${failed}</strong></span>
-                        </div>
-                        <table>
-                            <thead><tr><th>#</th><th>地址</th><th>名称</th><th>状态</th><th>消息</th><th>积分</th><th>错误</th></tr></thead>
-                            <tbody>
-                    `;
-                    accounts.forEach((acc, i) => {
-                        const statusClass = acc.status === 'success' ? 'status-success' : 'status-failed';
-                        const address = acc.address || '-';
-                        const shortAddr = address.length > 14 ? address.slice(0, 6) + '...' + address.slice(-4) : address;
-                        html2 += `
-                            <tr>
-                                <td>${i + 1}</td>
-                                <td class="address-cell" title="${address}">${shortAddr}</td>
-                                <td>${acc.name || '-'}</td>
-                                <td><span class="status-badge ${statusClass}">${acc.status}</span></td>
-                                <td>${acc.message || '-'}</td>
-                                <td>${acc.points || 0}</td>
-                                <td style="color:red;font-size:0.85em;">${acc.error || ''}</td>
-                            </tr>
-                        `;
-                    });
-                    html2 += `</tbody></table>`;
-                    td.innerHTML = html2;
-                }
-            }
-        }
-
-    } catch(e) {
-        showToast('加载今日概况失败: '+e.message, 'error');
+    function renderRunners() {
+      ['web3','browser'].forEach(type => {
+        const list = state.catalog.filter(x => x.runner === type), ready = list.filter(x => capability(x).ready).length;
+        $(`${type}Total`).textContent = list.length; $(`${type}Ready`).textContent = ready; $(`${type}Manual`).textContent = list.length - ready;
+      });
+      const ready = state.catalog.filter(x => capability(x).ready).length;
+      $('catalogHint').textContent = `${state.catalog.length} 个外部脚本已登记，其中 ${ready} 个满足当前 Linux 非交互运行条件。`;
     }
-}
-
-// ============================================================
-// 创建操作
-// ============================================================
-async function createProject() {
-    const name = document.getElementById('projectName').value.trim();
-    const url = document.getElementById('projectUrl').value.trim();
-    if (!name || !url) return showToast('请填写项目名称和 URL', 'error');
-    try {
-        await apiRequest('POST', '/projects', { name, url });
-        showToast('项目创建成功');
-        document.getElementById('projectName').value = '';
-        document.getElementById('projectUrl').value = '';
-        loadProjects();
-    } catch(e) {
-        showToast('创建项目失败: '+e.message, 'error');
+    function renderScripts() {
+      const query = $('search').value.trim().toLowerCase(), filter = $('filter').value;
+      const items = state.scripts.filter(script => {
+        const spec = specFor(script), cap = capability(spec), text = `${script.name} ${script.path}`.toLowerCase();
+        if (query && !text.includes(query)) return false;
+        if (filter === 'ready' && !cap.ready) return false;
+        if (filter === 'manual' && !spec.interactive) return false;
+        if (filter === 'windows' && spec.platform !== 'windows_host') return false;
+        if (filter === 'browser' && spec.runner !== 'browser') return false;
+        if (filter === 'web3' && spec.runner !== 'web3') return false;
+        return true;
+      });
+      if (!items.length) { $('scriptGrid').innerHTML = '<div class="empty">没有符合条件的脚本</div>'; return; }
+      $('scriptGrid').innerHTML = items.map(script => {
+        const spec = specFor(script), cap = capability(spec), runner = spec.runner === 'browser' ? '浏览器' : spec.runner === 'web3' ? 'Web3' : '普通';
+        const reason = spec.platform === 'windows_host' ? (state.windowsWorker ? '已接入 Windows Worker' : '需要 Windows Worker') : (spec.interactive && !spec.auto_input) ? '脚本含控制台输入，需先做非交互适配' : '可提交执行';
+        return `<article class="script-card"><div class="chips"><span class="chip ${esc(spec.runner)}">${runner}</span><span class="chip ${cap.cls}">${cap.label}</span></div><h3>${esc(script.name)}</h3><div class="script-path">${esc(script.path)}</div><div class="script-foot"><span class="muted">ID ${script.id} · ${esc(reason)}</span><button class="btn ${cap.ready ? '' : 'secondary'} run-script" data-id="${script.id}" ${cap.ready ? '' : 'disabled'}>${cap.ready ? '运行' : '查看条件'}</button></div></article>`;
+      }).join('');
     }
-}
-
-async function createTask() {
-    const project_id = parseInt(document.getElementById('taskProject').value);
-    const name = document.getElementById('taskName').value.trim();
-    const description = document.getElementById('taskDesc').value.trim();
-    if (!project_id) return showToast('请选择所属项目', 'error');
-    if (!name) return showToast('请填写任务名称', 'error');
-    try {
-        await apiRequest('POST', '/tasks', { project_id, name, description });
-        showToast('任务创建成功');
-        document.getElementById('taskName').value = '';
-        document.getElementById('taskDesc').value = '';
-        loadTasks();
-    } catch(e) {
-        showToast('创建任务失败: '+e.message, 'error');
+    function renderExecutions() {
+      const rows = state.executions || [];
+      if (!rows.length) { $('executionRows').innerHTML = '<tr><td colspan="7" class="empty">暂无执行记录</td></tr>'; return; }
+      $('executionRows').innerHTML = rows.map(row => {
+        const script = state.scripts.find(s => s.id === row.script_id);
+        const spec = script ? specFor(script) : { runner: 'legacy' };
+        const status = row.status || 'unknown';
+        const cancelButton = ['queued', 'running'].includes(status) ? `<button class="btn danger cancel-execution" data-id="${row.id}">中断</button>` : '';
+        return `<tr><td>#${row.id}</td><td>${esc(script?.name || `脚本 ${row.script_id}`)}</td><td>${esc(spec.runner || 'legacy')}</td><td><span class="status ${esc(status)}">${statusLabel(status)}</span></td><td class="output">${esc(row.output || row.error || '—')}</td><td>${row.created_at ? new Date(row.created_at).toLocaleString() : '—'}</td><td>${cancelButton}<button class="btn secondary detail-execution" data-id="${row.id}">详情</button></td></tr>`;
+      }).join('');
     }
-}
-
-async function createScript() {
-    const task_id = parseInt(document.getElementById('scriptTask').value);
-    const name = document.getElementById('scriptName').value.trim();
-    const path = document.getElementById('scriptPath').value.trim();
-    if (!task_id) return showToast('请选择所属任务', 'error');
-    if (!name || !path) return showToast('请填写脚本名称和路径', 'error');
-    try {
-        await apiRequest('POST', '/scripts', { task_id, name, path });
-        showToast('脚本创建成功');
-        document.getElementById('scriptName').value = '';
-        document.getElementById('scriptPath').value = '';
-        loadScripts();
-    } catch(e) {
-        showToast('创建脚本失败: '+e.message, 'error');
+    function renderWorkflows() {
+      const workflows = state.workflows || [];
+      const latestRunFor = (workflowId) => state.runs.filter(run => run.workflow_id === workflowId).sort((a, b) => Number(b.id || 0) - Number(a.id || 0))[0];
+      const latestRuns = workflows.map(workflow => latestRunFor(workflow.id)).filter(Boolean);
+      const runningCount = latestRuns.filter(run => ['running', 'queued'].includes(run.status)).length;
+      const completedCount = latestRuns.filter(run => SUCCESS.has(run.status)).length;
+      const attentionCount = latestRuns.filter(run => ['failed', 'cancelled', 'timeout', 'crashed', 'manual_required', 'unknown'].includes(run.status)).length;
+      $('workflowHint').textContent = `${workflows.length} 条工作流，状态会自动刷新，可按项目单独运行。`;
+      $('workflowSummary').innerHTML = `<span class="summary-pill"><strong>${runningCount}</strong>运行中</span><span class="summary-pill"><strong>${completedCount}</strong>已完成</span><span class="summary-pill"><strong>${attentionCount}</strong>需关注</span>`;
+      if (!workflows.length) { $('workflowGrid').innerHTML = '<div class="empty">暂无工作流，请先同步脚本目录</div>'; return; }
+      $('workflowGrid').innerHTML = workflows.map(workflow => {
+        const latest = latestRunFor(workflow.id);
+        const status = latest?.status || '';
+        const running = status === 'running' || status === 'queued';
+        const steps = workflow.step_count ?? workflow.steps_count ?? '—';
+        return `<article class="workflow-card"><div class="workflow-top"><span class="chip browser">WORKFLOW</span><span class="status ${esc(status)}">${status ? statusLabel(status) : '未运行'}</span></div><h3>${esc(workflow.project_name)} · ${esc(workflow.name)}</h3><p>${esc(workflow.description || '按步骤执行该项目下的自动化脚本')}</p><div class="workflow-foot"><span class="muted">${steps} 个步骤${latest ? ` · 最近 <span class="run-id">#${latest.id}</span>` : ''}</span><span class="muted">${latest?.created_at ? new Date(latest.created_at).toLocaleString() : '尚未执行'}</span></div><div class="workflow-actions"><span class="muted">${latest?.summary ? esc(latest.summary) : '支持幂等、重试和运行明细'}</span><button class="btn green run-workflow" data-id="${workflow.id}" ${running ? 'disabled' : ''}>${running ? '运行中' : '运行工作流'}</button></div></article>`;
+      }).join('');
     }
-}
-
-// ============================================================
-// 执行脚本
-// ============================================================
-async function executeScript() {
-    const script_id = parseInt(document.getElementById('executeScript').value);
-    if (!script_id) return showToast('请选择要执行的脚本', 'error');
-    const resultDiv = document.getElementById('executeResult');
-    resultDiv.style.display = 'block';
-    resultDiv.innerHTML = '⏳ 执行中，请稍候...';
-    try {
-        const result = await apiRequest('POST', `/execute/${script_id}`);
-        const status = result.status || 'unknown';
-        const msg = result.output || result.message || '执行完成';
-        resultDiv.innerHTML = `
-            <strong>执行结果：</strong>
-            <span class="status-badge ${status === 'success' ? 'status-success' : 'status-failed'}">${status}</span>
-            <br><strong>输出：</strong> ${msg.substring(0, 200)}${msg.length > 200 ? '...' : ''}
-            <br><strong>耗时：</strong> ${result.duration ? result.duration.toFixed(2) + 's' : 'N/A'}
-            <br><strong>执行ID：</strong> ${result.execution_id || 'N/A'}
-        `;
-        if (status === 'success') {
-            showToast('✅ 执行成功', 'success');
-        } else {
-            showToast('❌ 执行失败，请查看详情', 'error');
-        }
-        // 刷新今日概况
-        loadToday();
-    } catch(e) {
-        resultDiv.innerHTML = `<strong style="color:red;">执行异常：</strong> ${e.message}`;
-        showToast('执行异常: '+e.message, 'error');
+    function formatProgressTime(value) { return value ? new Date(value).toLocaleString() : '—'; }
+    function renderProgress() {
+      const rows = progressState.items || [];
+      if (!rows.length) { $('progressRows').innerHTML = '<tr><td colspan="7" class="empty">暂无项目进度记录</td></tr>'; return; }
+      $('progressRows').innerHTML = rows.map(item => {
+        const url = item.url && /^https?:\/\//i.test(item.url) ? `<a href="${esc(item.url)}" target="_blank" rel="noreferrer">打开</a>` : esc(item.url || '—');
+        return `<tr><td>${esc(item.name)}</td><td>${url}</td><td>${esc(formatProgressTime(item.target_time))}</td><td><span class="status queued">${esc(item.progress || '未开始')}</span></td><td>${esc(item.account || '—')}</td><td class="output">${esc(item.notes || '—')}</td><td><button class="btn secondary edit-progress" data-id="${item.id}">编辑</button><button class="btn danger delete-progress" data-id="${item.id}">删除</button></td></tr>`;
+      }).join('');
     }
-}
+    function resetProgressForm() {
+      progressState.editingId = null;
+      $('progressForm').reset();
+      $('progressStatus').value = '未开始';
+      $('progressForm').querySelector('button[type="submit"]').textContent = '新增项目';
+      $('cancelProgressEdit').hidden = true;
+    }
+    function editProgress(id) {
+      const item = progressState.items.find(row => row.id === Number(id));
+      if (!item) return;
+      progressState.editingId = item.id;
+      $('progressName').value = item.name || '';
+      $('progressUrl').value = item.url || '';
+      $('progressTime').value = item.target_time || '';
+      $('progressStatus').value = item.progress || '未开始';
+      $('progressAccount').value = item.account || '';
+      $('progressNotes').value = item.notes || '';
+      $('progressForm').querySelector('button[type="submit"]').textContent = '保存修改';
+      $('cancelProgressEdit').hidden = false;
+      $('progressForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    async function saveProgress(event) {
+      event.preventDefault();
+      const payload = {
+        name: $('progressName').value.trim(), url: $('progressUrl').value.trim(), target_time: $('progressTime').value,
+        progress: $('progressStatus').value.trim() || '未开始', account: $('progressAccount').value.trim(), notes: $('progressNotes').value.trim(),
+      };
+      if (!payload.name) return toast('项目名称不能为空', 'error');
+      try {
+        const url = progressState.editingId ? `/progress/projects/${progressState.editingId}` : '/progress/projects';
+        await api(progressState.editingId ? 'PUT' : 'POST', url, payload);
+        toast(progressState.editingId ? '进度项目已更新' : '进度项目已创建');
+        resetProgressForm(); await loadProgress();
+      } catch (error) { toast(error.message, 'error'); }
+    }
+    async function loadProgress() { progressState.items = (await api('GET', '/progress/projects')).data || []; renderProgress(); }
+    async function deleteProgress(id) {
+      const item = progressState.items.find(row => row.id === Number(id));
+      if (!item || !confirm(`确认删除项目“${item.name}”？`)) return;
+      try { await api('DELETE', `/progress/projects/${id}`); toast('进度项目已删除'); await loadProgress(); } catch (error) { toast(error.message, 'error'); }
+    }
+    async function loadCatalog() { state.catalog = (await api('GET', '/runners/catalog')).scripts || []; renderRunners(); renderScripts(); }
+    async function loadScripts() { state.scripts = await api('GET', '/scripts'); renderScripts(); fillSelectors(); }
+    async function loadToday() { const data = await api('GET', '/dashboard/today'); state.executions = data.records || []; renderStats(data); renderExecutions(); }
+    async function loadWorkflows() { const workflowData = await api('GET', '/workflows'); state.workflows = workflowData.data || []; state.runs = await api('GET', '/runs?limit=100'); renderWorkflows(); }
+    async function loadProjects() { const data = await api('GET', '/projects'); state.projects = data.data || []; $('taskProject').innerHTML = '<option value="">选择项目</option>' + state.projects.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join(''); }
+    async function loadTasks() { state.tasks = await api('GET', '/tasks'); $('scriptTask').innerHTML = '<option value="">选择任务</option>' + state.tasks.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join(''); }
+    function fillSelectors() { loadProjects().catch(()=>{}); loadTasks().catch(()=>{}); }
+    async function refreshAll() { try { const health = await api('GET', '/health'); state.windowsWorker = !!health.windows_worker_configured; setHealth(true, state.windowsWorker ? '服务正常 · Windows Worker 已接入' : '服务正常'); await Promise.all([loadCatalog(), loadScripts(), loadToday(), loadProjects(), loadTasks(), loadWorkflows(), loadProgress()]); } catch (error) { setHealth(false, '服务或 API Key 不可用'); toast(error.message, 'error'); } }
 
-// ============================================================
-// 页面初始化
-// ============================================================
-async function init() {
-    await loadProjects();
-    await loadTasks();
-    await loadScripts();
-    await loadToday();
-    // 每 30 秒自动刷新今日概况
-    setInterval(loadToday, 30000);
-}
+    async function runScript(id) {
+      const script = state.scripts.find(x => x.id === Number(id)), spec = script && specFor(script), cap = spec && capability(spec);
+      if (!script || !cap?.ready) return toast('该脚本当前不能自动运行，请先完成运行适配', 'error');
+      if (!confirm(`确认运行“${script.name}”？`)) return;
+      try { const result = await api('POST', `/execute/${id}?max_retries=0&background=true`); showExecutionResult(result); await loadToday(); } catch (error) { toast(error.message, 'error'); }
+    }
+    function showExecutionResult(result) { const cancelButton = result.execution_id && ['queued', 'running'].includes(result.status) ? `<button class="btn danger cancel-execution" data-id="${result.execution_id}">中断执行</button>` : ''; $('modalTitle').textContent = `执行 #${result.execution_id || '—'} · ${statusLabel(result.status)}`; $('modalBody').innerHTML = `<p><span class="status ${esc(result.status)}">${statusLabel(result.status)}</span> <span class="muted">运行器：${esc(result.runner || 'legacy')} · 耗时：${result.duration ? `${result.duration}s` : '—'}</span></p><div class="form-actions">${cancelButton}</div><pre>${esc(result.error || result.output || '执行已提交，正在后台运行')}</pre>${result.artifact_dir ? `<p class="muted">日志目录：${esc(result.artifact_dir)}</p>` : ''}`; $('modalBackdrop').classList.add('open'); }
+    async function cancelExecution(id) { if (!confirm(`确认中断执行 #${id}？`)) return; try { const result = await api('POST', `/executions/${id}/cancel`); toast(result.message || '已发送中断请求', result.cancelled ? 'success' : 'error'); await loadToday(); } catch (error) { toast(error.message, 'error'); } }
+    async function showDetails(id) {
+      try {
+        const [detail, files, accountData] = await Promise.all([
+          api('GET', `/executions/${id}`),
+          api('GET', `/executions/${id}/artifacts`),
+          api('GET', `/executions/${id}/accounts`),
+        ]);
+        const accounts = accountData.accounts || [];
+        const accountRows = accounts.map(account => `<tr><td>${esc(account.name || account.address || '—')}</td><td>${esc(account.address || '—')}</td><td><span class="status ${esc(account.status || 'unknown')}">${statusLabel(account.status || 'unknown')}</span></td><td>${esc(account.message || account.error || '—')}</td></tr>`).join('');
+        const accountBlock = `<h3>钱包结果（${accounts.length} 个）</h3>${accounts.length ? `<div class="table-wrap"><table><thead><tr><th>账号</th><th>地址</th><th>状态</th><th>结果</th></tr></thead><tbody>${accountRows}</tbody></table></div>` : '<p class="muted">该次运行没有结构化钱包结果。</p>'}`;
+        $('modalTitle').textContent = `执行 #${id} · ${statusLabel(detail.status)}`;
+        $('modalBody').innerHTML = `<p><span class="status ${esc(detail.status)}">${statusLabel(detail.status)}</span> <span class="muted">脚本 ID：${detail.script_id} · 耗时：${detail.duration || '—'}s</span></p>${accountBlock}<h3>输出</h3><pre>${esc(detail.output || detail.error || '无输出')}</pre><h3>日志文件</h3><pre>${esc((files.files || []).join('\n') || '暂无日志文件')}</pre>`;
+        $('modalBackdrop').classList.add('open');
+      } catch (error) { toast(error.message, 'error'); }
+    }
+    async function syncCatalog() { try { const result = await api('POST', '/runners/catalog/sync'); toast(`已同步 ${result.total || 0} 个脚本`); await refreshAll(); } catch (error) { toast(error.message, 'error'); } }
+    async function autoRun() { if (!confirm('将按工作流运行今天尚未执行的项目，确认继续？')) return; try { const result = await api('POST', '/runners/auto-run'); const count = (result.workflows || []).length; toast(`已处理 ${count} 条工作流`); await refreshAll(); } catch (error) { toast(error.message, 'error'); } }
+    async function runWorkflow(id) { const workflow = state.workflows.find(item => item.id === Number(id)); if (!workflow || !confirm(`确认运行“${workflow.project_name} · ${workflow.name}”？`)) return; try { const result = await api('POST', `/workflows/${id}/run?trigger=manual&max_retries=1`); toast(`工作流已结束：${statusLabel(result.run?.status || 'unknown')}`, result.run?.status === 'success' ? 'success' : 'error'); await Promise.all([loadWorkflows(), loadToday()]); } catch (error) { toast(error.message, 'error'); } }
+    async function createProject() { const name=$('projectName').value.trim(), url=$('projectUrl').value.trim(); if (!name || !url) return toast('项目名称和 URL 不能为空', 'error'); try { await api('POST','/projects',{name,url}); toast('项目创建成功'); $('projectName').value=''; $('projectUrl').value=''; await loadProjects(); } catch(e) { toast(e.message,'error'); } }
+    async function createTask() { const project_id=Number($('taskProject').value), name=$('taskName').value.trim(); if (!project_id || !name) return toast('请选择项目并填写任务名称', 'error'); try { await api('POST','/tasks',{project_id,name,description:''}); toast('任务创建成功'); $('taskName').value=''; await loadTasks(); } catch(e) { toast(e.message,'error'); } }
+    async function createScript() { const task_id=Number($('scriptTask').value), name=$('scriptName').value.trim(), path=$('scriptPath').value.trim(); if (!task_id || !name || !path) return toast('请完整填写脚本信息', 'error'); try { await api('POST','/scripts',{task_id,name,path}); toast('脚本创建成功'); $('scriptName').value=''; $('scriptPath').value=''; await loadScripts(); } catch(e) { toast(e.message,'error'); } }
 
-init();
-</script>
-
+    $('apiKey').value = key();
+    $('saveKey').addEventListener('click', () => { const value=$('apiKey').value.trim(); value ? localStorage.setItem('airdrop_api_key', value) : localStorage.removeItem('airdrop_api_key'); toast('API Key 已保存'); refreshAll(); });
+    $('autoRun').addEventListener('click', autoRun); $('refreshAll').addEventListener('click', refreshAll); $('refreshExecutions').addEventListener('click', loadToday); $('refreshWorkflows').addEventListener('click', loadWorkflows); $('syncCatalog').addEventListener('click', syncCatalog); $('search').addEventListener('input', renderScripts); $('filter').addEventListener('change', renderScripts);
+    $('createProject').addEventListener('click', createProject); $('createTask').addEventListener('click', createTask); $('createScript').addEventListener('click', createScript);
+    $('scriptGrid').addEventListener('click', event => { const btn=event.target.closest('.run-script'); if (btn) runScript(btn.dataset.id); }); $('workflowGrid').addEventListener('click', event => { const btn=event.target.closest('.run-workflow'); if (btn) runWorkflow(btn.dataset.id); }); $('executionRows').addEventListener('click', event => { const cancel=event.target.closest('.cancel-execution'); if (cancel) return cancelExecution(cancel.dataset.id); const detail=event.target.closest('.detail-execution'); if (detail) showDetails(detail.dataset.id); }); $('modalBody').addEventListener('click', event => { const cancel=event.target.closest('.cancel-execution'); if (cancel) cancelExecution(cancel.dataset.id); });
+    $('closeModal').addEventListener('click', () => $('modalBackdrop').classList.remove('open')); $('modalBackdrop').addEventListener('click', event => { if (event.target === $('modalBackdrop')) $('modalBackdrop').classList.remove('open'); });
+    document.addEventListener('keydown', event => { if (event.key !== 'Escape') return; const active = state.executions.find(row => ['queued', 'running'].includes(row.status)); if (active) cancelExecution(active.id); });
+    async function clearHistory() {
+      if (!confirm('确认清除历史执行记录吗？项目、脚本和正在运行的任务不会被删除。')) return;
+      try {
+        const result = await api('DELETE', '/history');
+        const deleted = result.deleted || {};
+        const kept = Number(deleted.active_executions || 0) + Number(deleted.active_runs || 0);
+        toast(`已清除 ${Number(deleted.executions || 0) + Number(deleted.runs || 0)} 条记录${kept ? `，保留 ${kept} 条运行中记录` : ''}`);
+        await refreshAll();
+      } catch (error) { toast(error.message, 'error'); }
+    }
+    $('clearHistory').addEventListener('click', clearHistory);
+    $('progressForm').addEventListener('submit', saveProgress); $('cancelProgressEdit').addEventListener('click', resetProgressForm); $('refreshProgress').addEventListener('click', loadProgress);
+    $('progressRows').addEventListener('click', event => { const edit=event.target.closest('.edit-progress'); if (edit) return editProgress(edit.dataset.id); const del=event.target.closest('.delete-progress'); if (del) deleteProgress(del.dataset.id); });
+    resetProgressForm(); refreshAll(); setInterval(loadToday, 30000); setInterval(loadWorkflows, 30000);
+  </script>
 </body>
 </html>

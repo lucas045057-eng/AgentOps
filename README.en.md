@@ -1,4 +1,4 @@
-# AgentOps — Automation Script Management Platform
+# AirDrop — Automation Script Management Platform
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-green.svg)
@@ -7,7 +7,7 @@
 
 English | [简体中文](./README.md)
 
-> **AgentOps** is a lightweight automation script management platform for managing, executing, and monitoring Python automation scripts (e.g., Web3 check-ins, task claiming, on-chain interactions). It transforms the daily routine from "manually running commands" to "one-click execution with visualized results."
+> **AirDrop** is a lightweight automation script management platform for managing, executing, and monitoring Python automation scripts (e.g., Web3 check-ins, task claiming, on-chain interactions). It transforms the daily routine from "manually running commands" to "one-click execution with visualized results."
 
 ---
 
@@ -29,7 +29,7 @@ English | [简体中文](./README.md)
 
 While participating in Web3 projects, I had to manually run a dozen scripts daily for check-ins, claiming, and swaps. These scripts were scattered across different directories, requiring commands like `python daily_checkin.py` or `python claim.py`—repetitive and mechanical work.
 
-**AgentOps solves this problem** by unifying script management, automatic execution, failure notifications, and clear result visualization.
+**AirDrop solves this problem** by unifying script management, automatic execution, failure notifications, and clear result visualization.
 
 ---
 
@@ -67,8 +67,8 @@ While participating in Web3 projects, I had to manually run a dozen scripts dail
 
 ```bash
 # Clone the repository
-git clone https://github.com/lucas045057-eng/AgentOps.git
-cd AgentOps
+git clone https://github.com/lucas045057-eng/AirDrop.git
+cd AirDrop
 
 # Create environment file
 cp .env.example .env
@@ -119,7 +119,7 @@ DEBUG=false
 ## 📂 Project Structure
 
 ```
-AgentOps/
+AirDrop/
 ├── app/
 │   ├── config.py              # Configuration management
 │   ├── database/
@@ -212,7 +212,7 @@ Dashboard displays results (expandable account details)
 | Method | Use Case | Command |
 | :--- | :--- | :--- |
 | **Docker Compose** | Production / Cross-platform | `docker-compose up -d` |
-| **Systemd (Linux)** | Native Linux service | `sudo systemctl start agentops` |
+| **Systemd (Linux)** | Native Linux service | `sudo systemctl start airdrop` |
 | **Local Dev** | Development | `uvicorn main:app --reload` |
 
 ---

@@ -1,13 +1,39 @@
 version: '3.8'
 
 services:
-  agentops:
+  airdrop:
     build: .
-    container_name: agentops
+    container_name: airdrop
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - ./projects.db:/app/projects.db
       - ./logs:/app/logs
       - ./.env:/app/.env
+      # The external daily source is read-only; runners stage writable copies in /tmp.
+      - "${DAILY_SCRIPTS_ROOT:-/mnt/e/项目脚本/日签/自动日签项目}:/app/external/daily:ro"
+    environment:
+      EXTERNAL_SCRIPT_ROOT: "/app/external/daily"
+      PROGRESS_DATABASE_URL: "${PROGRESS_DATABASE_URL:-/app/logs/progress.db}"
+      RUNNER_WORKSPACE_ROOT: "/tmp/airdrop-runs"
+      EXECUTION_LOG_ROOT: "/app/logs/executions"
+      ALLOW_INTERACTIVE: "${ALLOW_INTERACTIVE:-false}"
+      EXECUTION_PLATFORM: "${EXECUTION_PLATFORM:-linux}"
+      SYNC_RUNNER_CATALOG_ON_STARTUP: "${SYNC_RUNNER_CATALOG_ON_STARTUP:-true}"
+      AUTO_RUN_ON_STARTUP: "${AUTO_RUN_ON_STARTUP:-false}"
+      AUTO_RUN_INTERVAL_MINUTES: "${AUTO_RUN_INTERVAL_MINUTES:-0}"
+      AUTO_RUN_CATALOG_IDS: "${AUTO_RUN_CATALOG_IDS:-}"
+      AIRDROP_WALLET_COUNT: "${AIRDROP_WALLET_COUNT:-1}"
+      AIRDROP_APPEND_WALLET_COUNT: "${AIRDROP_APPEND_WALLET_COUNT:-0}"
+      AIRDROP_AUTO_PROVISION: "${AIRDROP_AUTO_PROVISION:-1}"
+      AIRDROP_THREADS: "${AIRDROP_THREADS:-5}"
+      FORTUNE_MODE: "${FORTUNE_MODE:-1}"
+      SIMPLE_MODE: "${SIMPLE_MODE:-1}"
+      SWARMBASE_TASK_COUNT: "${SWARMBASE_TASK_COUNT:-0}"
+      AIRDROP_REFERRAL_ADDRESS: "${AIRDROP_REFERRAL_ADDRESS:-}"
+      WINDOWS_WORKER_URL: "${WINDOWS_WORKER_URL:-}"
+      WINDOWS_WORKER_TOKEN: "${WINDOWS_WORKER_TOKEN:-}"
+      WINDOWS_WORKER_TIMEOUT: "${WINDOWS_WORKER_TIMEOUT:-930}"
     restart: unless-stopped

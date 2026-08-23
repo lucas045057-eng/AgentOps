@@ -1,0 +1,87 @@
+{
+  "version": 2,
+  "source_root": "E:/项目脚本/日签/自动日签项目",
+  "description": "Runtime uses five project-internal script copies; E: source files and wallet inputs are read-only references.",
+  "scripts": [
+    {
+      "id": "dgrid_daily",
+      "name": "DGrid钱包登录与每日任务(1)",
+      "path": "scripts/daily/DGrid/DGrid钱包登录与每日任务(1).py",
+      "project": "DGrid",
+      "enabled": true,
+      "runner": "web3",
+      "platform": "linux",
+      "workspace_mode": "isolated_copy",
+      "interactive": true,
+      "auto_input": true,
+      "result_policy": "exit_code",
+      "structured_required": true,
+      "timeout": 3600,
+      "env": {
+        "AIRDROP_WALLET_MODE": "specified",
+        "AIRDROP_SPECIFIED_WALLET_FILE": "/app/external/daily/DGrid/wallets.csv"
+      }
+    },
+    {
+      "id": "simple_daily_source",
+      "name": "4simple签到",
+      "path": "scripts/daily/Simple签到/4simple签到.py",
+      "project": "Simple",
+      "enabled": true,
+      "runner": "web3",
+      "platform": "linux",
+      "workspace_mode": "isolated_copy",
+      "interactive": true,
+      "auto_input": true,
+      "result_policy": "exit_code",
+      "structured_required": true,
+      "timeout": 3600,
+      "env": {
+        "AIRDROP_WALLET_MODE": "specified",
+        "AIRDROP_SPECIFIED_WALLET_FILE": "/app/external/daily/Simple签到/simple账号.xlsx"
+      }
+    },
+    {
+      "id": "sportix_daily",
+      "name": "SportIX批量签到领奖(2)",
+      "path": "scripts/daily/SportIX/SportIX批量签到领奖(2).py",
+      "project": "SportIX",
+      "enabled": true,
+      "runner": "web3",
+      "platform": "linux",
+      "workspace_mode": "isolated_copy",
+      "interactive": true,
+      "auto_input": true,
+      "result_policy": "exit_code",
+      "structured_required": true,
+      "timeout": 3600,
+      "env": {
+        "AIRDROP_WALLET_MODE": "specified",
+        "AIRDROP_SPECIFIED_WALLET_FILE": "/app/external/daily/SportIX/sportix.txt",
+        "SPORTIX_WALLET_SOURCE_FILE": "/app/external/daily/SportIX/sportix.txt",
+        "SPORTIX_WALLET_FILE": "/app/logs/wallets/SportIX-specified/sportix.txt",
+        "AIRDROP_AUTO_PROVISION": "0",
+        "AIRDROP_APPEND_WALLET_COUNT": "0"
+      }
+    },
+    {
+      "id": "swarmbase_daily",
+      "name": "SwarmBase批量自动化v4(2)",
+      "path": "scripts/daily/swarmbase/SwarmBase批量自动化v4(2).py",
+      "project": "SwarmBase",
+      "enabled": true,
+      "runner": "web3",
+      "platform": "linux",
+      "workspace_mode": "isolated_copy",
+      "interactive": true,
+      "auto_input": true,
+      "result_policy": "exit_code",
+      "structured_required": true,
+      "timeout": 7200,
+      "env": {
+        "AIRDROP_WALLET_MODE": "specified",
+        "AIRDROP_SPECIFIED_WALLET_FILE": "/app/external/daily/swarmbase/SwarmBase账号.csv"
+      }
+    }
+  ]
+}

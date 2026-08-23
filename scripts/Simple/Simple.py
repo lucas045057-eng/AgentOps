@@ -865,7 +865,7 @@ def main():
         final_message = f"脚本执行异常: {str(e)}"
         print(f"[!] 捕获到顶层异常: {e}")
 
-    # ========== AgentOps 标准输出（最后一行 JSON） ==========
+    # ========== AirDrop 标准输出（最后一行 JSON） ==========
     print(json.dumps({
         "status": final_status,
         "message": final_message,

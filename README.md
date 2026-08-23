@@ -1,14 +1,14 @@
-# AgentOps — 自动化脚本管理平台
+# AirDrop — 自动化脚本管理平台
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue.svg)
-![CI](https://github.com/lucas045057-eng/AgentOps/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/lucas045057-eng/AirDrop/actions/workflows/ci.yml/badge.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-green.svg)
 ![Docker](https://img.shields.io/badge/Docker-✔-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 [English](./README.en.md) | 简体中文
 
-> **AgentOps** 是一个轻量级的自动化脚本管理平台，用于统一管理、执行和监控各类 Python 自动化脚本（如 Web3 签到、任务领取、链上交互等）。让用户从"每天手动敲命令"变成"一键执行，打开网页看结果"。
+> **AirDrop** 是一个轻量级的自动化脚本管理平台，用于统一管理、执行和监控各类 Python 自动化脚本（如 Web3 签到、任务领取、链上交互等）。让用户从"每天手动敲命令"变成"一键执行，打开网页看结果"。
 
 ---
 
@@ -30,7 +30,7 @@
 
 在参与 Web3 项目时，我每天需要手动执行十几个签到、领水、Swap 脚本。这些脚本散落在不同目录，有的需要 `python daily_checkin.py`，有的需要 `python claim.py`，每天重复操作，非常机械。
 
-**AgentOps 就是为了解决这个问题而生的**：统一管理所有脚本，开机自动运行，失败时自动通知，执行结果一目了然。
+**AirDrop 就是为了解决这个问题而生的**：统一管理所有脚本，开机自动运行，失败时自动通知，执行结果一目了然。
 
 ---
 
@@ -68,8 +68,8 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/lucas045057-eng/AgentOps.git
-cd AgentOps
+git clone https://github.com/lucas045057-eng/AirDrop.git
+cd AirDrop
 
 # 创建环境变量文件
 cp .env.example .env
@@ -121,7 +121,7 @@ DEBUG=false
 ## 📂 项目结构
 
 ```
-AgentOps/
+AirDrop/
 ├── app/
 │   ├── config.py              # 配置管理
 │   ├── database/
@@ -214,7 +214,7 @@ projects (项目)
 | 方式 | 适用场景 | 命令 |
 | :--- | :--- | :--- |
 | **Docker Compose** | 生产环境 / 跨平台迁移 | `docker-compose up -d` |
-| **Systemd (Linux)** | 原生 Linux 服务 | `sudo systemctl start agentops` |
+| **Systemd (Linux)** | 原生 Linux 服务 | `sudo systemctl start airdrop` |
 | **本地开发** | 开发调试 | `uvicorn main:app --reload` |
 
 ---

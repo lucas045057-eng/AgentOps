@@ -29,7 +29,7 @@ SKIP_HEADER = False
 UI_SHOW_TIME = True
 UI_SHOW_THREAD_NAME = False
 UI_PRINT_FINAL_TABLE = True
-UI_PAUSE_AT_END = False   # ✅ 改为 False，不阻塞 AgentOps
+UI_PAUSE_AT_END = False   # ✅ 改为 False，不阻塞 AirDrop
 
 LOG_LOCK = threading.Lock()
 
@@ -436,7 +436,7 @@ def main():
         final_message = f"脚本执行异常: {str(e)}"
         safe_print(f"[!] 捕获到顶层异常: {e}")
 
-    # ========== AgentOps 标准输出（最后一行 JSON） ==========
+    # ========== AirDrop 标准输出（最后一行 JSON） ==========
     print(json.dumps({
         "status": final_status,
         "message": final_message,
